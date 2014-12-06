@@ -1,3 +1,4 @@
+from django.forms import widgets
 import os
 
 from django.db import models
@@ -31,6 +32,21 @@ class TextBlock(ContentBlock):
 
     def __unicode__(self):
         return self.text[:20]
+
+    class Meta:
+        app_label = 'fancypages'
+
+@register_content_block
+class HtmlBlock(ContentBlock):
+    name = _("Html")
+    code = 'html'
+    group = _("Content")
+    template_name = "fancypages/blocks/htmlblock.html"
+
+    source = models.CharField(_("Source"), max_length=10000, default="Your html goes here.")
+
+    def __unicode__(self):
+        return self.source
 
     class Meta:
         app_label = 'fancypages'
