@@ -12,19 +12,22 @@ from . import renderers
 from . import serialisers
 from ..library import get_grouped_content_blocks
 
-FancyPage = get_model('fancypages', 'FancyPage')
-Container = get_model('fancypages', 'Container')
-ContentBlock = get_model('fancypages', 'ContentBlock')
-OrderedContainer = get_model('fancypages', 'OrderedContainer')
+# FancyPage = get_model('fancypages', 'FancyPage')
+# Container = get_model('fancypages', 'Container')
+# ContentBlock = get_model('fancypages', 'ContentBlock')
+# OrderedContainer = get_model('fancypages', 'OrderedContainer')
 
 
 class BlockAPIMixin(object):
-    model = ContentBlock
+    # model = ContentBlock
     lookup_field = 'uuid'
     serializer_class = serialisers.BlockSerializer
 
     authentication_classes = (SessionAuthentication,)
     permission_classes = (IsAdminUser,)
+
+    def __new__(cls, *args, **kwargs):
+        cls.model = get_model('fancypages', 'ContentBlock')
 
 
 class BlockListView(BlockAPIMixin, generics.ListCreateAPIView):
@@ -58,12 +61,14 @@ class BlockDetailView(BlockAPIMixin, generics.RetrieveUpdateDestroyAPIView):
 
 
 class BlockNewView(generics.CreateAPIView):
-    model = ContentBlock
+    # model = ContentBlock
     serializer_class = serialisers.BlockCodeSerializer
 
     authentication_classes = (SessionAuthentication,)
     permission_classes = (IsAdminUser,)
 
+    def __new__(cls, *args, **kwargs):
+        cls.model = get_model('fancypages', 'ContentBlock')
 
 class BlockFormView(BlockAPIMixin, generics.RetrieveAPIView):
     renderer_classes = (renderers.BlockFormRenderer,)
@@ -84,11 +89,14 @@ class BlockMoveView(BlockAPIMixin, generics.UpdateAPIView):
 
 
 class OrderedContainerListView(generics.ListCreateAPIView):
-    model = OrderedContainer
+    # model = OrderedContainer
     serializer_class = serialisers.OrderedContainerSerializer
 
     authentication_classes = (SessionAuthentication,)
     permission_classes = (IsAdminUser,)
+
+    def __new__(cls, *args, **kwargs):
+        cls.model = get_model('fancypages', 'OrderedContainer')
 
 
 class PageSelectFormView(APIView):
@@ -135,9 +143,12 @@ class BlockTypesView(APIView):
 
 
 class PageMoveView(generics.UpdateAPIView):
-    model = FancyPage
+    # model = FancyPage
     lookup_field = 'uuid'
     serializer_class = serialisers.PageMoveSerializer
 
     authentication_classes = (SessionAuthentication,)
     permission_classes = (IsAdminUser,)
+
+    def __new__(cls, *args, **kwargs):
+        cls.model = get_model('fancypages', 'FancyPage')

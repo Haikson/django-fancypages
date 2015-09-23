@@ -7,20 +7,26 @@ from fancypages.assets import forms
 from fancypages.mixins import JSONResponseMixin
 
 
-ImageAsset = get_model('assets', 'ImageAsset')
+# ImageAsset = get_model('assets', 'ImageAsset')
 
 
 class ImageListView(generic.ListView):
-    model = ImageAsset
+    # model = ImageAsset
     template_name = 'fancypages/assets/image_list.html'
     context_object_name = 'image_list'
 
+    def __new__(cls, *args, **kwargs):
+        cls.model = get_model('assets', 'ImageAsset')
+
 
 class ImageAssetCreateView(JSONResponseMixin, generic.CreateView):
-    model = ImageAsset
+    # model = ImageAsset
     template_name = 'fancypages/assets/image_update.html'
     form_class = forms.ImageAssetCreateForm
     thumbnail_template_name = 'fancypages/assets/partials/image_thumbnail.html'
+
+    def __new__(cls, *args, **kwargs):
+        cls.model = get_model('assets', 'ImageAsset')
 
     def get(self, request, *args, **kwargs):
         return self.render_to_error_response(

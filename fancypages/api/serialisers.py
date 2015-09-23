@@ -15,11 +15,11 @@ from ..utils import get_page_model, get_node_model
 
 logger = logging.getLogger('fancypages.api')
 
-FancyPage = get_page_model()
-PageNode = get_node_model()
-Container = get_model('fancypages', 'Container')
-ContentBlock = get_model('fancypages', 'ContentBlock')
-OrderedContainer = get_model('fancypages', 'OrderedContainer')
+# FancyPage = get_page_model()
+# PageNode = get_node_model()
+# Container = get_model('fancypages', 'Container')
+# ContentBlock = get_model('fancypages', 'ContentBlock')
+# OrderedContainer = get_model('fancypages', 'OrderedContainer')
 
 SHORTUUID_REGEX = re.compile(r'[{0}]+'.format(shortuuid.get_alphabet()))
 
@@ -51,7 +51,10 @@ class BlockSerializer(serializers.ModelSerializer):
         return super(BlockSerializer, self).restore_object(attrs, instance)
 
     class Meta:
-        model = ContentBlock
+        pass
+
+    def __new__(cls, *args, **kwargs):
+        cls.Meta.model = get_model('fancypages', 'ContentBlock')
 
 
 class BlockCodeSerializer(serializers.Serializer):
@@ -59,6 +62,7 @@ class BlockCodeSerializer(serializers.Serializer):
     code = serializers.CharField(required=True)
 
     def validate_container(self, attrs, source):
+        Container = get_model('fancypages', 'Container')
         container_uuid = attrs.get('container')
         try:
             container = Container.objects.get(uuid=container_uuid)
@@ -79,8 +83,10 @@ class BlockMoveSerializer(serializers.ModelSerializer):
     index = serializers.IntegerField(source='display_order')
 
     class Meta:
-        model = ContentBlock
         read_only_fields = ['display_order']
+
+    def __new__(cls, *args, **kwargs):
+        cls.Meta.model = get_model('fancypages', 'ContentBlock')
 
 
 class OrderedContainerSerializer(serializers.ModelSerializer):
@@ -114,8 +120,10 @@ class OrderedContainerSerializer(serializers.ModelSerializer):
         return instance
 
     class Meta:
-        model = OrderedContainer
         exclude = ['display_order', 'object_id', 'content_type']
+
+    def __new__(cls, *args, **kwargs):
+        cls.Meta.model = get_model('fancypages', 'OrderedContainer')
 
 
 class PageMoveSerializer(serializers.ModelSerializer):
@@ -145,11 +153,12 @@ class PageMoveSerializer(serializers.ModelSerializer):
         # at the position of the new_index. If it is the last node
         # the index will cause a IndexError so we insert the page
         # after the last node.
+        PageNode = get_node_model()
         if obj.parent == '0':
             try:
                 node = PageNode.get_root_nodes()[obj.new_index]
             except IndexError:
-                node = PageNode.get_last_root_node()
+                node = PageNode().get_last_root_node()
                 position = 'right'
         # in this case the page is moved relative to a parent node.
         # we have to handle the same special case for the last node
@@ -168,6 +177,9 @@ class PageMoveSerializer(serializers.ModelSerializer):
         return obj.page
 
     class Meta:
-        model = FancyPage
+        # model = get_page_model()
         fields = ['parent', 'new_index', 'old_index']
         read_only_fields = ['status']
+
+    def __new__(cls, *args, **kwargs):
+        cls.Meta.model = get_page_model()

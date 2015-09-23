@@ -1,37 +1,41 @@
 from django import forms
-from django.db.models import get_model
+from django.db.models import get_model, QuerySet
 from django.utils.translation import ugettext_lazy as _
 
 from ..utils import unicode_slugify as slugify
 from ..utils import get_page_model, get_node_model
 
-PageNode = get_node_model()
-FancyPage = get_page_model()
-PageType = get_model('fancypages', 'PageType')
-PageGroup = get_model('fancypages', 'PageGroup')
+# PageNode = get_node_model()
+# FancyPage = get_page_model()
+# PageType = get_model('fancypages', 'PageType')
+# PageGroup = get_model('fancypages', 'PageGroup')
 
 DATE_FORMAT = '%d-%m-%Y'
 
 
 class PageNodeForm(forms.ModelForm):
     groups = forms.ModelMultipleChoiceField(
-        label=_("Groups"), queryset=PageGroup.objects.none(),
+        label=_("Groups"), queryset=QuerySet(),
         widget=forms.CheckboxSelectMultiple(), required=False)
 
     class Meta:
-        model = FancyPage
         exclude = ['uuid', 'node']
+
+    def __new__(cls, *args, **kwargs):
+        cls.Meta.model = get_page_model()
 
     def __init__(self, *args, **kwargs):
         self.parent_pk = kwargs.pop('parent_pk', None)
         super(PageNodeForm, self).__init__(*args, **kwargs)
 
+        PageGroup = get_model('fancypages', 'PageGroup')
         self.fields['groups'].queryset = PageGroup.objects.all()
 
         # we just need to store these for later to set the key order
         page_field_names = self.fields.keys()
 
         self.node_field_names = []
+        PageNode = get_node_model()
         for field in PageNode._meta.fields:
             if field.editable and \
                field.name not in ['id', 'depth', 'numchild', 'path', 'slug']:
