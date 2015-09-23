@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.db.models.loading import get_model
 from django.utils import timezone
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ValidationError
@@ -129,8 +130,14 @@ class AbstractFancyPage(models.Model):
     # never be left blank (hence, blank=False). We might be able to remove this
     # at some point but migrations make it impossible to change without a
     # default value. There's no sensible default, so we leave it nuu
+
+    try:
+        FP_NODE_MODEL = settings.FP_NODE_MODEL
+    except AttributeError:
+        FP_NODE_MODEL = 'fancypages.PageNode'
+
     node = models.OneToOneField(
-        settings.FP_NODE_MODEL, verbose_name=_("Tree node"),
+        FP_NODE_MODEL, verbose_name=_("Tree node"),
         related_name='page', null=True)
 
     page_type = models.ForeignKey(
